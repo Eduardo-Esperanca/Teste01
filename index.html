@@ -1,0 +1,671 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passagem de Turno</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6E59A5;
+            --primary-hover: #8B5CF6;
+            --accent-color: #0EA5E9;
+            --text-color: #333333;
+            --light-bg: #F1F0FB;
+            --white: #FFFFFF;
+            --error: #ea384c;
+            --success: #10B981;
+            --warning: #F97316;
+            --border-radius: 8px;
+            --box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            display: none;
+            width: 100%;
+            max-width: 450px;
+            margin: 30px auto;
+            background: var(--white);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container.active {
+            display: block;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(110, 89, 165, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            padding: 12px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: var(--white);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background-color: #E5DEFF;
+            color: var(--primary-color);
+        }
+
+        button.secondary:hover {
+            background-color: #D6BCFA;
+        }
+
+        button.danger {
+            background-color: var(--error);
+        }
+
+        button.warning {
+            background-color: var(--warning);
+        }
+
+        button.success {
+            background-color: var(--success);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sector-area {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .entry-card {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .entry-card p {
+            margin: 8px 0;
+        }
+
+        .entry-card .status {
+            font-weight: bold;
+        }
+
+        .entry-card .status.feito {
+            color: var(--success);
+        }
+
+        .entry-card .status.pendente {
+            color: var(--warning);
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .tab-buttons button {
+            background: none;
+            color: var(--text-color);
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-buttons button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: rgba(110, 89, 165, 0.1);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            padding: 30px;
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 15px;
+            }
+
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div id="login-container" class="container active">
+        <h1><i class="fas fa-exchange-alt"></i> Passagem de Turno</h1>
+        <div class="input-group">
+            <label for="email">Email ou Nome</label>
+            <input type="email" id="email" placeholder="Digite seu email ou nome completo">
+        </div>
+        <div class="input-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" placeholder="Digite sua senha">
+        </div>
+        <button onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+        <div class="button-row">
+            <button class="secondary" onclick="switchView('forgot-password-container')"><i class="fas fa-key"></i> Esqueceu a Senha?</button>
+            <button class="secondary" onclick="switchView('register-container')"><i class="fas fa-user-plus"></i> Cadastrar</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password Container -->
+    <div id="forgot-password-container" class="container">
+        <h1><i class="fas fa-unlock-alt"></i> Recuperar Senha</h1>
+        <div class="input-group">
+            <label for="forgot-email">Email</label>
+            <input type="email" id="forgot-email" placeholder="Digite seu e-mail cadastrado">
+        </div>
+        <button onclick="sendRecoveryEmail()"><i class="fas fa-paper-plane"></i> Enviar</button>
+        <button class="secondary" onclick="switchView('login-container')"><i class="fas fa-arrow-left"></i> Voltar</button>
+    </div>
+
+    <!-- Register Container -->
+    <div id="register-container" class="container">
+        <h1><i class="fas fa-user-plus"></i> Cadastrar Usuário</h1>
+        <div class="input-group">
+            <label for="register-name">Nome Completo</label>
+            <input type="text" id="register-name" placeholder="Digite seu nome completo">
+        </div>
+        <div class="input-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" placeholder="Digite seu email">
+        </div>
+        <div class="input-group">
+            <label for="register-password">Senha</label>
+            <input type="password" id="register-password" placeholder="Crie uma senha segura">
+        </div>
+        <button onclick="registerUser()"><i class="fas fa-user-check"></i> Registrar</button>
+        <button class="secondary" onclick="switchView('login-container')"><i class="fas fa-arrow-left"></i> Voltar</button>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-container" class="container">
+        <h1><i class="fas fa-clipboard-list"></i> Passagem de Turno</h1>
+        <div class="button-row">
+            <button onclick="switchView('view-container')"><i class="fas fa-list"></i> Ver Entradas</button>
+            <button class="secondary" onclick="switchView('login-container')"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="setor">Setor</label>
+            <select id="setor">
+                <option value="recebimento">Recebimento</option>
+                <option value="expedicao">Expedição</option>
+                <option value="separacao">Separação</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="nome">Nome do Responsável</label>
+            <input type="text" id="nome" placeholder="Digite seu nome">
+        </div>
+        
+        <div class="input-group">
+            <label for="data">Data</label>
+            <input type="date" id="data">
+        </div>
+        
+        <div class="input-group">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" placeholder="Descreva as atividades realizadas ou pendentes..."></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label for="status">Status</label>
+            <select id="status">
+                <option value="feito">Feito</option>
+                <option value="pendente">Pendente</option>
+            </select>
+        </div>
+        
+        <button class="success" onclick="addEntry()"><i class="fas fa-plus-circle"></i> Adicionar Entrada</button>
+    </div>
+
+    <!-- View Entries Container -->
+    <div id="view-container" class="container">
+        <h1><i class="fas fa-clipboard-check"></i> Entradas Cadastradas</h1>
+        
+        <div class="tab-buttons">
+            <button id="btn-recebimento" onclick="showSectorEntries('recebimento')"><i class="fas fa-dolly"></i> Recebimento</button>
+            <button id="btn-expedicao" onclick="showSectorEntries('expedicao')"><i class="fas fa-shipping-fast"></i> Expedição</button>
+            <button id="btn-separacao" onclick="showSectorEntries('separacao')"><i class="fas fa-box-open"></i> Separação</button>
+        </div>
+
+        <div id="sector-entries">
+            <div id="recebimento-entries" class="sector-area" style="display: none;"></div>
+            <div id="expedicao-entries" class="sector-area" style="display: none;"></div>
+            <div id="separacao-entries" class="sector-area" style="display: none;"></div>
+        </div>
+
+        <div class="button-row">
+            <button onclick="switchView('main-container')"><i class="fas fa-plus"></i> Nova Entrada</button>
+            <button class="secondary" onclick="switchView('login-container')"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the application with stored data (if any)
+        let entries = {
+            recebimento: [],
+            expedicao: [],
+            separacao: []
+        };
+
+        // Load data from localStorage if available
+        function loadStoredData() {
+            const storedEntries = localStorage.getItem('turnoEntries');
+            if (storedEntries) {
+                entries = JSON.parse(storedEntries);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('turnoEntries', JSON.stringify(entries));
+        }
+
+        // Call loadStoredData when the page loads
+        loadStoredData();
+
+        function switchView(containerId) {
+            // Add exit animation to current active container
+            const currentActive = document.querySelector('.container.active');
+            if (currentActive) {
+                currentActive.style.opacity = '0';
+                currentActive.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    currentActive.classList.remove('active');
+                    
+                    // Show new container with entrance animation
+                    const newContainer = document.getElementById(containerId);
+                    newContainer.classList.add('active');
+                    newContainer.style.opacity = '0';
+                    newContainer.style.transform = 'translateY(20px)';
+                    
+                    // Trigger reflow
+                    void newContainer.offsetWidth;
+                    
+                    // Apply animation
+                    newContainer.style.opacity = '1';
+                    newContainer.style.transform = 'translateY(0)';
+                    
+                    // Set active tab if in view container
+                    if (containerId === 'view-container') {
+                        showSectorEntries('recebimento');
+                    }
+                }, 300);
+            } else {
+                // If no active container, just show the new one
+                document.getElementById(containerId).classList.add('active');
+            }
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (email && password) {
+                // Show loading state on button
+                const loginButton = document.querySelector('#login-container button');
+                const originalText = loginButton.innerHTML;
+                loginButton.innerHTML = '<div class="loading"></div> Entrando...';
+                loginButton.disabled = true;
+                
+                // Simulate authentication delay
+                setTimeout(() => {
+                    switchView('main-container');
+                    
+                    // Reset button state
+                    loginButton.innerHTML = originalText;
+                    loginButton.disabled = false;
+                    
+                    // Set today's date as default
+                    document.getElementById('data').valueAsDate = new Date();
+                }, 1000);
+            } else {
+                showAlert('Por favor, preencha todos os campos.', 'error');
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.textContent = message;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.left = '50%';
+            alertDiv.style.transform = 'translateX(-50%)';
+            alertDiv.style.padding = '12px 20px';
+            alertDiv.style.borderRadius = '8px';
+            alertDiv.style.zIndex = '1000';
+            alertDiv.style.maxWidth = '80%';
+            alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            
+            // Set color based on alert type
+            if (type === 'error') {
+                alertDiv.style.backgroundColor = 'var(--error)';
+            } else if (type === 'success') {
+                alertDiv.style.backgroundColor = 'var(--success)';
+            } else if (type === 'warning') {
+                alertDiv.style.backgroundColor = 'var(--warning)';
+            } else {
+                alertDiv.style.backgroundColor = 'var(--primary-color)';
+            }
+            
+            alertDiv.style.color = 'white';
+            
+            // Add to body
+            document.body.appendChild(alertDiv);
+            
+            // Remove after delay
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(alertDiv), 300);
+            }, 3000);
+        }
+
+        function sendRecoveryEmail() {
+            const email = document.getElementById('forgot-email').value;
+            if (email) {
+                // Show loading state
+                const button = document.querySelector('#forgot-password-container button');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<div class="loading"></div> Enviando...';
+                button.disabled = true;
+                
+                // Simulate server request
+                setTimeout(() => {
+                    showAlert(`E-mail de recuperação enviado para ${email}`, 'success');
+                    switchView('login-container');
+                    
+                    // Reset button and field
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    document.getElementById('forgot-email').value = '';
+                }, 1500);
+            } else {
+                showAlert('Por favor, insira um e-mail válido.', 'error');
+            }
+        }
+
+        function registerUser() {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            
+            if (name && email && password) {
+                // Show loading state
+                const button = document.querySelector('#register-container button');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<div class="loading"></div> Registrando...';
+                button.disabled = true;
+                
+                // Simulate registration
+                setTimeout(() => {
+                    showAlert('Usuário registrado com sucesso!', 'success');
+                    switchView('login-container');
+                    
+                    // Reset button and fields
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    document.getElementById('register-name').value = '';
+                    document.getElementById('register-email').value = '';
+                    document.getElementById('register-password').value = '';
+                }, 1500);
+            } else {
+                showAlert('Por favor, preencha todos os campos.', 'error');
+            }
+        }
+
+        function addEntry() {
+            const setor = document.getElementById('setor').value;
+            const nome = document.getElementById('nome').value;
+            const data = document.getElementById('data').value;
+            const descricao = document.getElementById('descricao').value;
+            const status = document.getElementById('status').value;
+
+            if (setor && nome && data && descricao && status) {
+                // Format date in a more readable way
+                const formattedDate = new Date(data).toLocaleDateString('pt-BR');
+                
+                // Add entry to the beginning of the array
+                entries[setor].unshift({ 
+                    nome, 
+                    data: formattedDate, 
+                    descricao, 
+                    status,
+                    timestamp: Date.now() // Add timestamp for sorting
+                });
+                
+                // Save to localStorage
+                saveData();
+                
+                // Show success message
+                showAlert('Entrada adicionada com sucesso!', 'success');
+                
+                // Reset form except for sector
+                document.getElementById('nome').value = '';
+                document.getElementById('descricao').value = '';
+                document.getElementById('status').value = 'feito';
+                
+                // Set today's date
+                document.getElementById('data').valueAsDate = new Date();
+            } else {
+                showAlert('Por favor, preencha todos os campos.', 'error');
+            }
+        }
+
+        function showSectorEntries(sector) {
+            // Set active tab styling
+            document.querySelectorAll('.tab-buttons button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(`btn-${sector}`).classList.add('active');
+            
+            // Hide all sector areas
+            document.querySelectorAll('.sector-area').forEach(area => {
+                area.style.display = 'none';
+            });
+
+            // Get the appropriate sector area
+            const sectorArea = document.getElementById(`${sector}-entries`);
+            
+            // Clear previous entries
+            sectorArea.innerHTML = '';
+
+            // Check if there are entries for this sector
+            if (entries[sector].length) {
+                // Create and append entry cards for each entry
+                entries[sector].forEach((entry, index) => {
+                    const entryCard = document.createElement('div');
+                    entryCard.className = 'entry-card';
+                    entryCard.innerHTML = `
+                        <p><strong><i class="fas fa-user"></i> Responsável:</strong> ${entry.nome}</p>
+                        <p><strong><i class="fas fa-calendar-alt"></i> Data:</strong> ${entry.data}</p>
+                        <p><strong><i class="fas fa-clipboard-list"></i> Descrição:</strong><br>${entry.descricao}</p>
+                        <p><strong><i class="fas fa-tasks"></i> Status:</strong> 
+                            <span class="status ${entry.status}">${entry.status === 'feito' ? 'Concluído' : 'Pendente'}</span>
+                        </p>
+                        <button onclick="toggleStatus('${sector}', ${index})">
+                            ${entry.status === 'feito' 
+                                ? '<i class="fas fa-clock"></i> Marcar como Pendente' 
+                                : '<i class="fas fa-check-circle"></i> Marcar como Concluído'}
+                        </button>
+                    `;
+                    sectorArea.appendChild(entryCard);
+                });
+            } else {
+                // Show empty state
+                sectorArea.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard"></i>
+                        <p>Sem entradas cadastradas para o setor ${getSectorName(sector)}.</p>
+                        <button onclick="switchView('main-container')">
+                            <i class="fas fa-plus-circle"></i> Adicionar Entrada
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Show the sector area
+            sectorArea.style.display = 'block';
+        }
+
+        function getSectorName(sector) {
+            const sectorNames = {
+                'recebimento': 'Recebimento',
+                'expedicao': 'Expedição',
+                'separacao': 'Separação'
+            };
+            return sectorNames[sector] || sector;
+        }
+
+        function toggleStatus(sector, index) {
+            // Toggle status between "feito" and "pendente"
+            const currentStatus = entries[sector][index].status;
+            entries[sector][index].status = currentStatus === "feito" ? "pendente" : "feito";
+            
+            // Save changes to localStorage
+            saveData();
+            
+            // Show status change confirmation
+            const newStatus = entries[sector][index].status === "feito" ? "Concluído" : "Pendente";
+            showAlert(`Status alterado para ${newStatus}`, 'success');
+            
+            // Update the display
+            showSectorEntries(sector);
+        }
+
+        // Set today's date as default when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('data');
+            if (dateInput) {
+                dateInput.valueAsDate = new Date();
+            }
+        });
+    </script>
+</body>
+</html>
